@@ -1,105 +1,183 @@
 // ============================================================
-// API client — talks to the (not-yet-built) backend that wraps
-// the 2D CNN and the 3D U-Net. Endpoints are a proposal, not a
-// contract: adjust the paths/fields to match your FastAPI/Flask
-// service once it exists. See README.md for the expected shape.
+// API CLIENT
 // ============================================================
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+export const API_BASE = "http://127.0.0.1:8001";
 
-// Flip this off once your backend is real. While true, the app
-// never makes a network call and instead returns believable fake
-// results after a short delay, so the UI can be built/demoed
-// independently of the model backend being finished.
-export const DEMO_MODE = (import.meta.env.VITE_DEMO_MODE ?? 'true') === 'true'
+export const DEMO_MODE = false;
+
+// ============================================================
+// SMALL WAIT HELPER
+// ============================================================
 
 function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * 2D classification: single MRI slice -> tumor type.
- * Expected real response shape:
- * {
- *   "prediction": "Glioma",
- *   "confidences": { "Glioma": 0.81, "Meningioma": 0.09, "Pituitary": 0.04, "No Tumor": 0.06 }
- * }
- */
+// ============================================================
+// 2D PREDICTION
+// ============================================================
+
 export async function predict2D(file) {
+  // ----------------------------------------------------------
+  // DEMO MODE
+  // ----------------------------------------------------------
+
   if (DEMO_MODE) {
-    await wait(1400)
-    const classes = ['Glioma', 'Meningioma', 'Pituitary', 'No Tumor']
-    const raw = classes.map(() => Math.random())
-    const sum = raw.reduce((a, b) => a + b, 0)
-    let confidences = Object.fromEntries(classes.map((c, i) => [c, raw[i] / sum]))
-    // bias one class up so the demo looks like a real prediction
-    const winner = classes[Math.floor(Math.random() * classes.length)]
-    confidences[winner] += 0.4
-    const total = Object.values(confidences).reduce((a, b) => a + b, 0)
-    confidences = Object.fromEntries(Object.entries(confidences).map(([k, v]) => [k, v / total]))
-    const prediction = Object.entries(confidences).sort((a, b) => b[1] - a[1])[0][0]
-    return { prediction, confidences, demo: true }
+    await wait(1400);
+
+    const classes = ["Glioma", "Meningioma", "No Tumor", "Pituitary"];
+
+    const raw = classes.map(() => Math.random());
+
+    const sum = raw.reduce((a, b) => a + b, 0);
+
+    let confidences = Object.fromEntries(
+      classes.map((c, i) => [c, raw[i] / sum]),
+    );
+
+    const winner = classes[Math.floor(Math.random() * classes.length)];
+
+    confidences[winner] += 0.4;
+
+    const total = Object.values(confidences).reduce((a, b) => a + b, 0);
+
+    confidences = Object.fromEntries(
+      Object.entries(confidences).map(([k, v]) => [k, v / total]),
+    );
+
+    const prediction = Object.entries(confidences).sort(
+      (a, b) => b[1] - a[1],
+    )[0][0];
+
+    return {
+      prediction,
+      confidences,
+      demo: true,
+    };
   }
 
-  const form = new FormData()
-  form.append('file', file)
+  // ----------------------------------------------------------
+  // REAL BACKEND
+  // ----------------------------------------------------------
+
+  const form = new FormData();
+
+  form.append("file", file);
+
+  console.log("Sending 2D MRI to:", `${API_BASE}/api/predict/2d`);
 
   const res = await fetch(`${API_BASE}/api/predict/2d`, {
-    method: 'POST',
+    method: "POST",
     body: form,
-  })
+  });
+
   if (!res.ok) {
-    throw new Error(`2D inference failed (${res.status})`)
+    const text = await res.text();
+
+    throw new Error(`2D inference failed (${res.status}): ${text}`);
   }
-  return res.json()
+
+  return res.json();
 }
 
-/**
- * 3D segmentation: four modalities (t1n, t1c, t2w, t2f) -> tumor
- * detection + localization.
- * Expected real response shape:
- * {
- *   "tumor_detected": true,
- *   "dice": 0.8958,
- *   "voxel_count": 18234,
- *   "slices": ["<base64 png slice 0>", "<base64 png slice 1>", ...],
- *   "mask_slices": ["<base64 png mask overlay 0>", ...]
- * }
- */
+// ============================================================
+// 3D SEGMENTATION
+// ============================================================
+
 export async function predict3D(modalities) {
-  if (DEMO_MODE) {
-    await wait(2200)
-    const tumorDetected = Math.random() > 0.25
-    return {
-      tumor_detected: tumorDetected,
-      dice: tumorDetected ? 0.83 + Math.random() * 0.08 : null,
-      voxel_count: tumorDetected ? Math.floor(6000 + Math.random() * 20000) : 0,
-      slice_count: 64,
-      demo: true,
+  // ----------------------------------------------------------
+  // CHECK FOUR FILES
+  // ----------------------------------------------------------
+
+  if (!modalities) {
+    throw new Error("No MRI files were provided.");
+  }
+
+  const required = ["t1n", "t1c", "t2w", "t2f"];
+
+  for (const key of required) {
+    if (!modalities[key]) {
+      throw new Error(`${key.toUpperCase()} MRI file is missing.`);
     }
   }
 
-  const form = new FormData()
-  Object.entries(modalities).forEach(([key, file]) => {
-    if (file) form.append(key, file)
-  })
+  // ----------------------------------------------------------
+  // CREATE FORM DATA
+  // ----------------------------------------------------------
+
+  const form = new FormData();
+
+  form.append("t1n", modalities.t1n);
+
+  form.append("t1c", modalities.t1c);
+
+  form.append("t2w", modalities.t2w);
+
+  form.append("t2f", modalities.t2f);
+
+  // ----------------------------------------------------------
+  // DEBUG
+  // ----------------------------------------------------------
+
+  console.log("Sending 3D MRI files to:", `${API_BASE}/api/predict/3d`);
+
+  console.log("T1n:", modalities.t1n.name);
+
+  console.log("T1c:", modalities.t1c.name);
+
+  console.log("T2w:", modalities.t2w.name);
+
+  console.log("T2f:", modalities.t2f.name);
+
+  // ----------------------------------------------------------
+  // SEND REQUEST
+  // ----------------------------------------------------------
 
   const res = await fetch(`${API_BASE}/api/predict/3d`, {
-    method: 'POST',
+    method: "POST",
     body: form,
-  })
+  });
+
+  // ----------------------------------------------------------
+  // ERROR
+  // ----------------------------------------------------------
+
   if (!res.ok) {
-    throw new Error(`3D inference failed (${res.status})`)
+    const text = await res.text();
+
+    console.error("3D backend error:", text);
+
+    throw new Error(`3D inference failed (${res.status}): ${text}`);
   }
-  return res.json()
+
+  // ----------------------------------------------------------
+  // RESPONSE
+  // ----------------------------------------------------------
+
+  const data = await res.json();
+
+  console.log("3D backend response:", data);
+
+  return data;
 }
 
+// ============================================================
+// BACKEND HEALTH CHECK
+// ============================================================
+
 export async function checkHealth() {
-  if (DEMO_MODE) return true
+  if (DEMO_MODE) {
+    return true;
+  }
+
   try {
-    const res = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(2500) })
-    return res.ok
+    const res = await fetch(`${API_BASE}/api/health`, {
+      signal: AbortSignal.timeout(2500),
+    });
+
+    return res.ok;
   } catch {
-    return false
+    return false;
   }
 }
