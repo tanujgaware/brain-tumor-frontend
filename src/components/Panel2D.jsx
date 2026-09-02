@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { predict2D } from '../api'
 import ResultPanel2D from './ResultPanel2D'
+import axios from 'axios'
 
 const ACCEPTED = '.png,.jpg,.jpeg,.dcm'
 
@@ -35,8 +36,11 @@ export default function Panel2D() {
     setError(null)
     setResult(null)
     try {
-      const res = await predict2D(file)
-      setResult(res)
+      const formData=new FormData();
+      formData.append("file",file);
+      const res = await axios.post("http://127.0.0.1:8000/api/predict/2d",formData);
+      console.log(res)
+      setResult(res.data)
     } catch (err) {
       setError(err.message || 'Something went wrong while classifying this scan.')
     } finally {
@@ -109,6 +113,8 @@ export default function Panel2D() {
       {error && <div className="error-banner">{error}</div>}
 
       {result && <ResultPanel2D result={result} />}
+
+      <div></div>
     </div>
   )
 }

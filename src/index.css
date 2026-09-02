@@ -759,3 +759,32 @@ button, input {
   outline: 2px solid var(--blue-core);
   outline-offset: 2px;
 }
+
+.gradcam-section {
+  margin-top: 20px;
+}
+
+.gradcam-section h3 {
+  margin-bottom: 12px;
+}
+
+.gradcam-images {
+  display: flex;
+  gap: 12px;
+}
+
+.gradcam-images > div {
+  flex: 1;
+  text-align: center;
+}
+
+.gradcam-images h4 {
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.gradcam-images img {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+}

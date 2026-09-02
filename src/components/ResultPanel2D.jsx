@@ -34,9 +34,34 @@ export default function ResultPanel2D({ result }) {
               style={{ width: `${value * 100}%`, background: COLORS[label] }}
             />
           </div>
-          <div className="class-bar-value">{(value * 100).toFixed(1)}%</div>
+          <div className="class-bar-value">{(value * 100).toFixed(3)}%</div>
         </div>
       ))}
+
+      {result.grad_images && (
+        <div className="gradcam-section">
+          <h3>Grad-CAM Visualization</h3>
+
+          <img
+            src={result.grad_images}
+            alt="Grad-CAM visualization"
+            className="gradcam-image"
+          />
+        </div>
+      )}
+
+      {result.explanation && (<>
+      <hr />
+        <h3>Explanation</h3>
+          <div className="">
+            <p>{result.explanation}</p>
+          </div>
+        </>
+      )}
+      <hr />
+      <div>
+        <p>*This system provides AI-assisted image classification. The heatmap represents regions that influenced the model's prediction and should not be interpreted as a definitive tumor boundary. Results should be reviewed by a qualified medical professional.</p>
+      </div>
     </div>
   )
 }
