@@ -759,32 +759,360 @@ button, input {
   outline: 2px solid var(--blue-core);
   outline-offset: 2px;
 }
+/* ============================================================
+   3D MULTI-PLANE VISUALIZATION
+   ============================================================ */
 
-.gradcam-section {
-  margin-top: 20px;
+.plane-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-top: 24px;
 }
 
-.gradcam-section h3 {
-  margin-bottom: 12px;
+
+/* ============================================================
+   IMAGE CARD
+   ============================================================ */
+
+.result-image-card {
+  min-width: 0;
 }
 
-.gradcam-images {
-  display: flex;
-  gap: 12px;
-}
 
-.gradcam-images > div {
-  flex: 1;
+.result-image-title {
   text-align: center;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  margin-bottom: 10px;
+
+  color: #111827;
 }
 
-.gradcam-images h4 {
-  margin-bottom: 6px;
-  font-size: 13px;
-}
 
-.gradcam-images img {
+.result-image-container {
   width: 100%;
-  border-radius: 8px;
+
+  min-height: 220px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border-radius: 12px;
+
+  background: #111827;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.result-image {
   display: block;
+
+  width: 100%;
+  height: auto;
+
+  max-height: 260px;
+
+  object-fit: contain;
+}
+
+
+.result-image-empty {
+  min-height: 220px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  text-align: center;
+
+  font-size: 13px;
+
+  color: #9ca3af;
+}
+
+
+/* ============================================================
+   LEGEND
+   ============================================================ */
+
+.visualization-legend {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 30px;
+
+  margin-top: 25px;
+}
+
+
+.legend-item {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 14px;
+
+  color: #374151;
+}
+
+
+.legend-color {
+  width: 28px;
+  height: 4px;
+
+  border-radius: 5px;
+
+  display: inline-block;
+}
+
+
+.legend-color.prediction {
+  background: blue;
+}
+
+
+.legend-color.ground-truth {
+  background: red;
+}
+/* =========================================================
+   MULTI-PLANE VISUALIZATION
+   ========================================================= */
+
+.plane-visualization {
+  margin-top: 36px;
+}
+
+
+/* Plane heading */
+
+.plane-title {
+  text-align: center;
+
+  font-size: 20px;
+  font-weight: 800;
+
+  margin-bottom: 18px;
+
+  color: #111827;
+
+  text-transform: uppercase;
+}
+
+
+/* Four image columns */
+
+.visualization-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 18px;
+
+  width: 100%;
+}
+
+
+/* Individual card */
+
+.result-image-card {
+  min-width: 0;
+
+  border-radius: 16px;
+
+  overflow: hidden;
+
+  background: #111827;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+
+/* Image title */
+
+.result-image-title {
+  min-height: 48px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 10px;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  line-height: 1.2;
+
+  color: #111827;
+
+  background: transparent;
+}
+
+
+/* Image area */
+
+.result-image-container {
+  width: 100%;
+
+  height: 260px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  overflow: hidden;
+
+  background: #111827;
+}
+
+
+/* Actual MRI image */
+
+.result-image {
+  width: 100%;
+
+  height: 100%;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+
+/* Empty state */
+
+.result-image-empty {
+  width: 100%;
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 25px;
+
+  color: #9ca3af;
+
+  font-size: 14px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   SPACING BETWEEN AXIAL / CORONAL / SAGITTAL
+   ========================================================= */
+
+.plane-visualization + .plane-visualization {
+  margin-top: 42px;
+}
+
+
+/* =========================================================
+   LEGEND
+   ========================================================= */
+
+.visualization-legend {
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 35px;
+
+  margin-top: 35px;
+
+  padding-top: 20px;
+
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+
+.legend-item {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  font-size: 14px;
+
+  color: #374151;
+}
+
+
+.legend-color {
+  width: 32px;
+
+  height: 4px;
+
+  border-radius: 5px;
+
+  display: inline-block;
+}
+
+
+.legend-color.prediction {
+  background: blue;
+}
+
+
+.legend-color.ground-truth {
+  background: red;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .visualization-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .visualization-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .result-image-container {
+    height: 300px;
+  }
+
 }
